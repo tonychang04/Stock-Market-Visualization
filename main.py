@@ -14,7 +14,7 @@ if __name__ == '__main__':
                            start = start_date,
                            end = end_date,
                            data_source='yahoo')['Adj Close']
-        plt.plot(company_series.index, company_series.values, label = company)
+        plt.plot(company_series.index, company_series.values, color = company[1])
 
 
     #plt.plot(aapl.index, aapl.values)
