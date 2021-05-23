@@ -5,14 +5,21 @@ import numpy as np
 
 
 if __name__ == '__main__':
-    companies = []
-    aapl = data.DataReader("AAPL",
-                           start='2020-1-1',
-                           end='2020-12-31',
+    # Company ticks, these companies corresponds to apple, amazon, google, intel, facebook
+    companies = [("AAPL","blue"),("AMZN","red"), ("GOOGL","orange") ,("INTC","green"),("FB","purple")]
+    start_date = '2020-1-1'
+    end_date = '2020-12-31'
+    for company in companies:
+        company_series= data.DataReader(company[0],
+                           start = start_date,
+                           end = end_date,
                            data_source='yahoo')['Adj Close']
+        plt.plot(company_series.index, company_series.values, label = company)
 
-    print(aapl.index)
 
-    plt.plot(aapl.index, aapl.values)
+    #plt.plot(aapl.index, aapl.values)
+    plt.legend([company[0] for company in companies])
+    plt.xlabel = 'Date'
+    plt.ylabel = 'Price Per Stock'
     plt.show(block=True)
-    plt.interactive(True)
+   # plt.interactive(True)
