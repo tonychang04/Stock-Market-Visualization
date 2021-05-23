@@ -19,7 +19,8 @@ if __name__ == '__main__':
 
     #plt.plot(aapl.index, aapl.values)
     plt.legend([company[0] for company in companies])
-    plt.xlabel = 'Date'
-    plt.ylabel = 'Price Per Stock'
+    plt.title("Closed Stock Price Per Day")
+    plt.xlabel('Date')
+    plt.ylabel('Price Per Stock')
     plt.show(block=True)
    # plt.interactive(True)
