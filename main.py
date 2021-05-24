@@ -1,5 +1,7 @@
 from pandas_datareader import data
 import matplotlib.pyplot as plt
+from datetime import date
+import datetime
 import matplotlib
 import numpy as np
 
@@ -7,8 +9,10 @@ import numpy as np
 if __name__ == '__main__':
     # Company ticks, these companies corresponds to apple, amazon, google, intel, facebook
     companies = [("AAPL","blue"),("AMZN","red"), ("GOOGL","orange") ,("INTC","green"),("FB","purple")]
-    start_date = '2020-1-1'
-    end_date = '2020-12-31'
+    end_date = date.today()
+    traceback_days = datetime.timedelta(60)
+    start_date = end_date - traceback_days
+    print(end_date)
     for company in companies:
         company_series= data.DataReader(company[0],
                            start = start_date,
