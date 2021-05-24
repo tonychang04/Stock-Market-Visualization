@@ -2,29 +2,30 @@ from pandas_datareader import data
 import matplotlib.pyplot as plt
 from datetime import date
 import datetime
-import matplotlib
-import numpy as np
 
+import numpy as np
 
 if __name__ == '__main__':
     # Company ticks, these companies corresponds to apple, amazon, google, intel, facebook
-    companies = [("AAPL","blue"),("AMZN","red"), ("GOOGL","orange") ,("INTC","green"),("FB","purple")]
+    companies = [("AAPL", "blue"), ("AMZN", "red"), ("GOOGL", "orange"), ("INTC", "green"), ("FB", "purple")]
     end_date = date.today()
-    traceback_days = datetime.timedelta(60)
+    # how many days you want to trace back
+    traceback_days = datetime.timedelta(90)
     start_date = end_date - traceback_days
-    print(end_date)
+    figure, (price_plot, percent_change_plot) = plt.subplots(2, 1, sharex=True, figsize = (12,8))
+
     for company in companies:
-        company_series= data.DataReader(company[0],
-                           start = start_date,
-                           end = end_date,
-                           data_source='yahoo')['Adj Close']
-        plt.plot(company_series.index, company_series.values, color = company[1])
+        company_series = data.DataReader(company[0],
+                                         start=start_date,
+                                         end=end_date,
+                                         data_source='yahoo')['Adj Close']
+        price_plot.plot(company_series.index, company_series.values, color=company[1])
+        percent_change_plot.plot(company_series.index, company_series.pct_change(), color=company[1])
 
-
-    #plt.plot(aapl.index, aapl.values)
-    plt.legend([company[0] for company in companies])
-    plt.title("Closed Stock Price Per Day")
+    plt.suptitle("Stock Data")
+    figure.legend([company[0] for company in companies])
     plt.xlabel('Date')
-    plt.ylabel('Price Per Stock')
-    plt.show(block=True)
-   # plt.interactive(True)
+    figure.tight_layout()
+    price_plot.set_ylabel('Price Per Stock')
+    percent_change_plot.set_ylabel('Price Percent Change')
+    plt.show()
