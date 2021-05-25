@@ -2,12 +2,14 @@ from pandas_datareader import data
 import matplotlib.pyplot as plt
 from datetime import date
 import datetime
+import numpy as np
 
 
 def convertTimeToString(data):
+    string = []
     for i in range(len(data)):
-        data[i].strftime("%Y-%m-%d ")
-    return data
+        string.append(data[i].strftime("%m-%d"))
+    return np.array(string)
 
 
 if __name__ == '__main__':
@@ -18,7 +20,6 @@ if __name__ == '__main__':
     traceback_days = datetime.timedelta(90)
     start_date = end_date - traceback_days
     figure, (price_plot, percent_change_plot) = plt.subplots(2, 1, sharex=True, figsize=(12, 8))
-
     for company in companies:
         company_series = data.DataReader(company[0],
                                          start=start_date,
@@ -28,10 +29,10 @@ if __name__ == '__main__':
         percent_change_plot.plot(convertTimeToString(company_series.index), company_series.pct_change(),
                                  color=company[1])
 
-    plt.suptitle("Stock Data")
-    figure.legend([company[0] for company in companies])
     plt.xlabel('Date')
+    plt.xticks(rotation='vertical', fontsize = 11)
     figure.tight_layout()
+    figure.legend([company[0] for company in companies])
     price_plot.set_ylabel('Price Per Stock')
     percent_change_plot.set_ylabel('Price Percent Change')
     plt.show()
