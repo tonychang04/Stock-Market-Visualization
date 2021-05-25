@@ -16,7 +16,7 @@ def convertTimeToString(data):
 if __name__ == '__main__':
     # import font caches
     matplotlib.rcParams['font.size'] = 12
-    matplotlib.rcParams['font.family'] = 'Calibri'
+    matplotlib.rcParams['font.family'] = 'sans-serif'
 
     # Company ticks, these companies corresponds to apple, amazon, google, intel, facebook
     companies = [("AAPL", "blue"), ("AMZN", "red"), ("GOOGL", "orange"), ("INTC", "green"), ("FB", "purple")]
