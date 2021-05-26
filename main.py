@@ -1,8 +1,10 @@
-import matplotlib
-from pandas_datareader import data
-import matplotlib.pyplot as plt
 from datetime import date
+from pandas_datareader import data
+from sklearn.preprocessing import MinMaxScaler
+
 import datetime
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -22,8 +24,17 @@ if __name__ == '__main__':
     companies = [("AAPL", "blue"), ("AMZN", "red"), ("GOOGL", "orange"), ("INTC", "green"), ("FB", "purple")]
     end_date = date.today()
     # how many days you want to trace back
-    traceback_days = datetime.timedelta(90)
-    start_date = end_date - traceback_days
+    visualization_traceback_days = datetime.timedelta(60)
+    start_date = end_date - visualization_traceback_days
+    #temp will delete this later
+    company = data.DataReader(companies[0][0],
+                    start=start_date,
+                    end=end_date,
+                    data_source='yahoo')['Adj Close']
+    scaler = MinMaxScaler(feature_range = (0,1))
+    scaled_data = scaler.fit_transform(company.values.reshape((-1,1)))
+    print(scaled_data[:,:])
+
     figure, (price_plot, percent_change_plot) = plt.subplots(2, 1, sharex=True, figsize=(12, 8))
     for company in companies:
         company_series = data.DataReader(company[0],
@@ -35,9 +46,14 @@ if __name__ == '__main__':
                                  color=company[1])
 
     plt.xlabel('Date')
-    plt.xticks(rotation='vertical', fontsize = 11)
+    plt.xticks(rotation='vertical', fontsize=11)
     figure.tight_layout()
     figure.legend([company[0] for company in companies])
+
     price_plot.set_ylabel('Price Per Stock')
+    price_plot.grid(True)
     percent_change_plot.set_ylabel('Price Percent Change')
+    percent_change_plot.grid(True)
+
     plt.show()
+
