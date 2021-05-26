@@ -1,6 +1,8 @@
 from datetime import date
 from pandas_datareader import data
 from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.layers import Dense, Dropout, LSTM
+from tensorflow.keras.models import Sequential
 
 import datetime
 import matplotlib
@@ -25,20 +27,38 @@ if __name__ == '__main__':
     end_date = date.today()
     # how many days you want to trace back
     visualization_traceback_days = datetime.timedelta(60)
-    start_date = end_date - visualization_traceback_days
-    #temp will delete this later
-    company = data.DataReader(companies[0][0],
-                    start=start_date,
-                    end=end_date,
-                    data_source='yahoo')['Adj Close']
-    scaler = MinMaxScaler(feature_range = (0,1))
-    scaled_data = scaler.fit_transform(company.values.reshape((-1,1)))
-    print(scaled_data[:,:])
+    visual_start_date = end_date - visualization_traceback_days
+    learning_traceback_days = datetime.timedelta(365)
+    learning_start_date = end_date - learning_traceback_days
 
+    # temp will delete this later
+    company = data.DataReader(companies[0][0],
+                              start=learning_start_date,
+                              end=end_date,
+                              data_source='yahoo')['Adj Close']
+    prediction_days = 60
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled_data = scaler.fit_transform(company.values.reshape((-1, 1)))
+
+    x_train_list = []
+    y_train_list = []
+    for i in range(prediction_days, len(scaled_data)):
+        x_train_list.append(scaled_data[i - prediction_days:i, 0])
+        y_train_list.append(scaled_data[i,0])
+
+    x_train, y_train = np.array(x_train_list), np.array(y_train_list)
+    # need to reshape into 3d for LSTM model to work, the three dimensions represents
+    # samples, time steps, and features
+    x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+    y_train = np.reshape(y_train, (y_train.shape[0], y_train.shape[1], 1))
+
+    
+
+    """
     figure, (price_plot, percent_change_plot) = plt.subplots(2, 1, sharex=True, figsize=(12, 8))
     for company in companies:
         company_series = data.DataReader(company[0],
-                                         start=start_date,
+                                         start=visual_start_date,
                                          end=end_date,
                                          data_source='yahoo')['Adj Close']
         price_plot.plot(convertTimeToString(company_series.index), company_series.values, color=company[1])
@@ -56,4 +76,4 @@ if __name__ == '__main__':
     percent_change_plot.grid(True)
 
     plt.show()
-
+    """
