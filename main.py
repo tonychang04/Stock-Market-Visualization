@@ -28,7 +28,7 @@ if __name__ == '__main__':
     # how many days you want to trace back
     visualization_traceback_days = datetime.timedelta(60)
     visual_start_date = end_date - visualization_traceback_days
-    learning_traceback_days = datetime.timedelta(365)
+    learning_traceback_days = datetime.timedelta(360)
     learning_start_date = end_date - learning_traceback_days
 
     # temp will delete this later
@@ -36,23 +36,50 @@ if __name__ == '__main__':
                               start=learning_start_date,
                               end=end_date,
                               data_source='yahoo')['Adj Close']
+
     prediction_days = 60
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(company.values.reshape((-1, 1)))
 
     x_train_list = []
     y_train_list = []
+
     for i in range(prediction_days, len(scaled_data)):
         x_train_list.append(scaled_data[i - prediction_days:i, 0])
         y_train_list.append(scaled_data[i,0])
 
     x_train, y_train = np.array(x_train_list), np.array(y_train_list)
+    x_test = np.array(x_train_list)
     # need to reshape into 3d for LSTM model to work, the three dimensions represents
     # samples, time steps, and features
     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
-    y_train = np.reshape(y_train, (y_train.shape[0], y_train.shape[1], 1))
+   # y_train = np.reshape(y_train, (y_train.shape[0], y_train.shape[1], 1))
+    # Start model
+    model = Sequential()
 
-    
+    model.add(LSTM(units=50, return_sequences=True, input_shape = (x_train.shape[1], 1)))
+    #adding dropout to avoid over fit
+    model.add(Dropout(0.2))
+    model.add(LSTM(units=50, return_sequences=True))
+    model.add(Dropout(0.2))
+    model.add(LSTM(units=50, return_sequences=True))
+    model.add(Dropout(0.2))
+    # no need to return sequences since this is the last layer
+    model.add(LSTM(units=50))
+    model.add(Dropout(0.2))
+    model.add(Dense(units=1))
+
+    model.compile(optimizer='adam', loss= 'mean_squared_error')
+    model.fit(x_train, y_train, epochs=100, verbose=1)
+
+    x_test = np.reshape(x_test, (x_test.shape[0],x_test.shape[1],1))
+    price = model.predict(x_test)
+    price = scaler.inverse_transform(price)
+    plt.plot(convertTimeToString(company.index), company.values, color = 'blue')
+    plt.plot(convertTimeToString(company.index[prediction_days:]), price, color = 'red')
+    plt.show()
+
+
 
     """
     figure, (price_plot, percent_change_plot) = plt.subplots(2, 1, sharex=True, figsize=(12, 8))
