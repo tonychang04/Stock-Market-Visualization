@@ -1,5 +1,6 @@
 from datetime import date
 
+
 from keras.models import load_model
 from pandas_datareader import data
 from sklearn.preprocessing import MinMaxScaler
@@ -10,6 +11,8 @@ import datetime
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import os.path
+
 
 
 def convertTimeToString(data):
@@ -33,9 +36,11 @@ def createModel(company_tuple, learning_total_days):
         scaler = MinMaxScaler(feature_range=(0, 1))
         scaled_data = scaler.fit_transform(company.values.reshape((-1, 1)))
 
+        scalers.append(scaler)
+        del scaler
+
         x_train_list = []
         y_train_list = []
-
         for day in range(prediction_days, len(scaled_data)):
             x_train_list.append(scaled_data[day - prediction_days:day, 0])
             y_train_list.append(scaled_data[day, 0])
@@ -44,35 +49,34 @@ def createModel(company_tuple, learning_total_days):
         x_test = np.array(x_train_list)
         x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
         x_test_list.append(x_test)
-        """
-        # need to reshape into 3d for LSTM model to work, the three dimensions represents
-        # samples, time steps, and features
-        x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
-        # y_train = np.reshape(y_train, (y_train.shape[0], y_train.shape[1], 1))
-        # Start model
-        model = Sequential()
 
-        model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1)))
-        # adding dropout to avoid over fit
-        model.add(Dropout(0.2))
-        model.add(LSTM(units=50, return_sequences=True))
-        model.add(Dropout(0.2))
-        model.add(LSTM(units=50, return_sequences=True))
-        model.add(Dropout(0.2))
-        # no need to return sequences since this is the last layer
-        model.add(LSTM(units=50))
-        model.add(Dropout(0.2))
-        model.add(Dense(units=1))
+        # if the model already exists
+        if (os.path.isfile(company_tuple[i][2])):
+            # need to reshape into 3d for LSTM model to work, the three dimensions represents
+            # samples, time steps, and features
+            x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+            # y_train = np.reshape(y_train, (y_train.shape[0], y_train.shape[1], 1))
+            # Start model
+            model = Sequential()
+            model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1)))
+            # adding dropout to avoid over fit
+            model.add(Dropout(0.2))
+            model.add(LSTM(units=50, return_sequences=True))
+            model.add(Dropout(0.2))
+            model.add(LSTM(units=50, return_sequences=True))
+            model.add(Dropout(0.2))
+            # no need to return sequences since this is the last layer
+            model.add(LSTM(units=50))
+            model.add(Dropout(0.2))
+            model.add(Dense(units=1))
 
-        model.compile(optimizer='adam', loss='mean_squared_error')
-        model.fit(x_train, y_train, epochs=100, verbose=1)
+            model.compile(optimizer='adam', loss='mean_squared_error')
+            model.fit(x_train, y_train, epochs=100, verbose=1)
 
-        # index 2 of the tuple represents the model path
-        model.save(company_tuple[i][2])
-        del model
-        """
-        scalers.append(scaler)
-        del scaler
+            # index 2 of the tuple represents the model path
+            model.save(company_tuple[i][2])
+            del model
+
     return scalers, x_test_list
 
 
@@ -89,14 +93,14 @@ if __name__ == '__main__':
                  ("FB", "purple", "facebook_model.h5")]
     end_date = date.today()
     # how many days you want to trace back
-    visualization_traceback_days = datetime.timedelta(150)
+    visualization_traceback_days = datetime.timedelta(100)
     visual_start_date = end_date - visualization_traceback_days
 
-    print(companies[0][2])
+
     scalers, x_test_list = createModel(companies, 365)
 
-    figure, ax = plt.subplots(len(companies), 1, sharex=True, figsize=(12, 8))
     for i in range(len(companies)):
+        plt.figure(i)
         company = data.DataReader(companies[i][0],
                                   start=visual_start_date,
                                   end=end_date,
@@ -104,14 +108,17 @@ if __name__ == '__main__':
         model = load_model(companies[i][2])
         price = model.predict(x_test_list[i])
         price = scalers[i].inverse_transform(price)
-        ax[i].title(companies[i][0])
-        ax[i].plot(convertTimeToString(company.index), company.values, color= companies[i][1])
-        ax[i].plot(convertTimeToString(company.index), price[-len(company.index):], color='black', ls = '--')
-        ax[i].grid(True)
 
+        plt.title(companies[i][0] + " Stock Market")
+        plt.xlabel("Date")
+        plt.ylabel("Stock Price")
+        plt.xticks(rotation='vertical', fontsize=8)
+        plt.plot(convertTimeToString(company.index),
+                 company.values, color=companies[i][1], label = companies[i][0] + " Actual Result")
+        plt.plot(convertTimeToString(company.index), price[-len(company.index):],
+                 color='black', ls='--', label = "Prediction")
+        plt.legend()
 
-    plt.xticks(rotation='vertical', fontsize=8)
-    figure.tight_layout()
     plt.show()
 
 
