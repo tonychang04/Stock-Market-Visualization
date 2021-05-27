@@ -1,6 +1,4 @@
 from datetime import date
-
-
 from keras.models import load_model
 from pandas_datareader import data
 from sklearn.preprocessing import MinMaxScaler
@@ -14,14 +12,29 @@ import numpy as np
 import os.path
 
 
-
-def convertTimeToString(data):
+def convertTimeToString(data_list):
+    """
+    Converts the list of datatime to numpy array of string
+    :param data_list: list of datetime objects
+    :return: numpy array of string representing the time
+    """
     string = []
-    for i in range(len(data)):
+    for i in range(len(data_list)):
         string.append(data[i].strftime("%m-%d"))
     return np.array(string)
 
+
+
 def createModel(company_tuple, learning_total_days):
+    """
+    Creates the model for each company.
+    :param company_tuple: The tuples of company containing company ticks, color of graph, and
+        the file name ending with h.5
+    :param learning_total_days: The total number of days feeding for the entire model
+        has to be greater than 60 as every day uses past 60 days to predict the data
+    :return: A list of scaler objects used to inverse transform the predictions and
+        A list of x_test varibles used for predictions
+    """
     learning_traceback_days = datetime.timedelta(learning_total_days)
     learning_start_date = end_date - learning_traceback_days
     scalers = []
@@ -50,8 +63,8 @@ def createModel(company_tuple, learning_total_days):
         x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
         x_test_list.append(x_test)
 
-        # if the model already exists
-        if (os.path.isfile(company_tuple[i][2])):
+        # if the model already exists then don't create anymore
+        if (not os.path.isfile(company_tuple[i][2])):
             # need to reshape into 3d for LSTM model to work, the three dimensions represents
             # samples, time steps, and features
             x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
@@ -123,36 +136,3 @@ if __name__ == '__main__':
 
 
 
-    """
-    price = model.predict(x_test)
-    price = scaler.inverse_transform(price)
-    plt.plot(convertTimeToString(company.index), company.values, color = 'blue')
-    plt.plot(convertTimeToString(company.index[prediction_days:]), price, color = 'red')
-    plt.show()
-    """
-
-
-
-    """
-    figure, (price_plot, percent_change_plot) = plt.subplots(2, 1, sharex=True, figsize=(12, 8))
-    for company in companies:
-        company_series = data.DataReader(company[0],
-                                         start=visual_start_date,
-                                         end=end_date,
-                                         data_source='yahoo')['Adj Close']
-        price_plot.plot(convertTimeToString(company_series.index), company_series.values, color=company[1])
-        percent_change_plot.plot(convertTimeToString(company_series.index), company_series.pct_change(),
-                                 color=company[1])
-
-    plt.xlabel('Date')
-    plt.xticks(rotation='vertical', fontsize=11)
-    figure.tight_layout()
-    figure.legend([company[0] for company in companies])
-
-    price_plot.set_ylabel('Price Per Stock')
-    price_plot.grid(True)
-    percent_change_plot.set_ylabel('Price Percent Change')
-    percent_change_plot.grid(True)
-
-    plt.show()
-    """
