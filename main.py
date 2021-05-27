@@ -24,7 +24,6 @@ def convertTimeToString(data_list):
     return np.array(string)
 
 
-
 def createModel(company_tuple, learning_total_days):
     """
     Creates the model for each company.
@@ -99,8 +98,8 @@ if __name__ == '__main__':
     matplotlib.rcParams['font.family'] = 'sans-serif'
 
     # Company ticks, these companies corresponds to apple, amazon, google, intel, facebook
-    companies = [("AAPL", "blue","apple_model.h5"),
-                 ("AMZN", "red","amazon_model.h5"),
+    companies = [("AAPL", "blue", "apple_model.h5"),
+                 ("AMZN", "red", "amazon_model.h5"),
                  ("GOOGL", "orange", "google_model.h5"),
                  ("INTC", "green", "intel_model.h5"),
                  ("FB", "purple", "facebook_model.h5")]
@@ -108,7 +107,6 @@ if __name__ == '__main__':
     # how many days you want to trace back
     visualization_traceback_days = datetime.timedelta(100)
     visual_start_date = end_date - visualization_traceback_days
-
 
     scalers, x_test_list = createModel(companies, 365)
 
@@ -127,12 +125,9 @@ if __name__ == '__main__':
         plt.ylabel("Stock Price")
         plt.xticks(rotation='vertical', fontsize=8)
         plt.plot(convertTimeToString(company.index),
-                 company.values, color=companies[i][1], label = companies[i][0] + " Actual Result")
+                 company.values, color=companies[i][1], label=companies[i][0] + " Actual Result")
         plt.plot(convertTimeToString(company.index), price[-len(company.index):],
-                 color='black', ls='--', label = "Prediction")
+                 color='black', ls='--', label="Prediction")
         plt.legend()
 
     plt.show()
-
-
-
