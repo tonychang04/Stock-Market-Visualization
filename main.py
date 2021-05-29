@@ -20,13 +20,13 @@ def convertTimeToString(data_list):
     """
     string = []
     for i in range(len(data_list)):
-        string.append(data[i].strftime("%m-%d"))
+        string.append(data_list[i].strftime("%m-%d"))
     return np.array(string)
 
 
 def createModel(company_tuple, learning_total_days):
     """
-    Creates the model for each company.
+    Creates the LSTM model for each company.
     :param company_tuple: The tuples of company containing company ticks, color of graph, and
         the file name ending with h.5
     :param learning_total_days: The total number of days feeding for the entire model
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     scalers, x_test_list = createModel(companies, 365)
 
     for i in range(len(companies)):
-        plt.figure(i)
+        plt.figure(i, figsize=(12, 8))
         company = data.DataReader(companies[i][0],
                                   start=visual_start_date,
                                   end=end_date,
@@ -122,7 +122,7 @@ if __name__ == '__main__':
 
         plt.title(companies[i][0] + " Stock Market")
         plt.xlabel("Date")
-        plt.ylabel("Stock Price")
+        plt.ylabel("Price Per Stock")
         plt.xticks(rotation='vertical', fontsize=8)
         plt.plot(convertTimeToString(company.index),
                  company.values, color=companies[i][1], label=companies[i][0] + " Actual Result")
